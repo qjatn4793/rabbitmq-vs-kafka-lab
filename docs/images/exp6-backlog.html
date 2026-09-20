@@ -1,0 +1,55 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8">
+<title>적체가 쌓일 때 발행 처리량이 유지되는가</title>
+<style>html,body{margin:0;padding:0;background:#fcfcfb;}</style></head>
+<body><svg width="1200" height="700" viewBox="0 0 1200 700" xmlns="http://www.w3.org/2000/svg">
+<rect width="1200" height="700" fill="#fcfcfb"/>
+<text x="48" y="46" font-family="'Apple SD Gothic Neo','AppleGothic','Noto Sans KR',-apple-system,sans-serif" font-size="22" fill="#0b0b0b" font-weight="700" text-anchor="start">적체가 쌓일 때 발행 처리량이 유지되는가</text>
+<text x="48" y="72" font-family="'Apple SD Gothic Neo','AppleGothic','Noto Sans KR',-apple-system,sans-serif" font-size="13" fill="#52514e" font-weight="400" text-anchor="start">컨슈머 없이 1만 건씩 60회, 총 60만 건 발행 · 512바이트 메시지 · 내구성 우선 설정 (Kafka acks=all · RabbitMQ persistent + confirms)</text>
+<text x="48" y="116" font-family="'Apple SD Gothic Neo','AppleGothic','Noto Sans KR',-apple-system,sans-serif" font-size="15" fill="#0b0b0b" font-weight="700" text-anchor="start">Kafka</text>
+<text x="112" y="116" font-family="'Apple SD Gothic Neo','AppleGothic','Noto Sans KR',-apple-system,sans-serif" font-size="13" fill="#52514e" font-weight="400" text-anchor="start">중앙값 384,615 msg/s · 급락 0회</text>
+<line x1="130" y1="302.0" x2="1140" y2="302.0" stroke="#e8e7e3" stroke-width="1"/>
+<text x="118" y="306.0" font-family="'Apple SD Gothic Neo','AppleGothic','Noto Sans KR',-apple-system,sans-serif" font-size="12" fill="#8a8983" font-weight="400" text-anchor="end">0</text>
+<line x1="130" y1="245.3" x2="1140" y2="245.3" stroke="#e8e7e3" stroke-width="1"/>
+<text x="118" y="249.33333333333334" font-family="'Apple SD Gothic Neo','AppleGothic','Noto Sans KR',-apple-system,sans-serif" font-size="12" fill="#8a8983" font-weight="400" text-anchor="end">150,000</text>
+<line x1="130" y1="188.7" x2="1140" y2="188.7" stroke="#e8e7e3" stroke-width="1"/>
+<text x="118" y="192.66666666666669" font-family="'Apple SD Gothic Neo','AppleGothic','Noto Sans KR',-apple-system,sans-serif" font-size="12" fill="#8a8983" font-weight="400" text-anchor="end">300,000</text>
+<line x1="130" y1="132.0" x2="1140" y2="132.0" stroke="#e8e7e3" stroke-width="1"/>
+<text x="118" y="136.0" font-family="'Apple SD Gothic Neo','AppleGothic','Noto Sans KR',-apple-system,sans-serif" font-size="12" fill="#8a8983" font-weight="400" text-anchor="end">450,000</text>
+<line x1="130" y1="302" x2="1140" y2="302" stroke="#e8e7e3" stroke-width="1"/>
+<text x="130.0" y="322" font-family="'Apple SD Gothic Neo','AppleGothic','Noto Sans KR',-apple-system,sans-serif" font-size="12" fill="#8a8983" font-weight="400" text-anchor="middle">1</text>
+<text x="284.06779661016947" y="322" font-family="'Apple SD Gothic Neo','AppleGothic','Noto Sans KR',-apple-system,sans-serif" font-size="12" fill="#8a8983" font-weight="400" text-anchor="middle">10</text>
+<text x="455.2542372881356" y="322" font-family="'Apple SD Gothic Neo','AppleGothic','Noto Sans KR',-apple-system,sans-serif" font-size="12" fill="#8a8983" font-weight="400" text-anchor="middle">20</text>
+<text x="626.4406779661017" y="322" font-family="'Apple SD Gothic Neo','AppleGothic','Noto Sans KR',-apple-system,sans-serif" font-size="12" fill="#8a8983" font-weight="400" text-anchor="middle">30</text>
+<text x="797.6271186440678" y="322" font-family="'Apple SD Gothic Neo','AppleGothic','Noto Sans KR',-apple-system,sans-serif" font-size="12" fill="#8a8983" font-weight="400" text-anchor="middle">40</text>
+<text x="968.8135593220339" y="322" font-family="'Apple SD Gothic Neo','AppleGothic','Noto Sans KR',-apple-system,sans-serif" font-size="12" fill="#8a8983" font-weight="400" text-anchor="middle">50</text>
+<text x="1140.0" y="322" font-family="'Apple SD Gothic Neo','AppleGothic','Noto Sans KR',-apple-system,sans-serif" font-size="12" fill="#8a8983" font-weight="400" text-anchor="middle">60</text>
+<polyline points="130.0,167.1 147.1,156.7 164.2,171.7 181.4,150.9 198.5,150.9 215.6,150.9 232.7,167.1 249.8,137.7 266.9,150.9 284.1,137.7 301.2,167.1 318.3,137.7 335.4,156.7 352.5,176.1 369.7,167.1 386.8,156.7 403.9,180.1 421.0,144.6 438.1,156.7 455.3,150.9 472.4,156.7 489.5,156.7 506.6,137.7 523.7,156.7 540.8,144.6 558.0,137.7 575.1,137.7 592.2,167.1 609.3,137.7 626.4,150.9 643.6,150.9 660.7,183.9 677.8,162.1 694.9,167.1 712.0,167.1 729.2,197.1 746.3,187.5 763.4,194.1 780.5,199.9 797.6,212.1 814.7,197.1 831.9,187.5 849.0,150.9 866.1,167.1 883.2,167.1 900.3,150.9 917.5,150.9 934.6,150.9 951.7,180.1 968.8,156.7 985.9,162.1 1003.1,150.9 1020.2,167.1 1037.3,150.9 1054.4,144.6 1071.5,171.7 1088.6,176.1 1105.8,150.9 1122.9,167.1 1140.0,137.7" fill="none" stroke="#2a78d6" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="48" y="392" font-family="'Apple SD Gothic Neo','AppleGothic','Noto Sans KR',-apple-system,sans-serif" font-size="15" fill="#0b0b0b" font-weight="700" text-anchor="start">RabbitMQ</text>
+<text x="142" y="392" font-family="'Apple SD Gothic Neo','AppleGothic','Noto Sans KR',-apple-system,sans-serif" font-size="13" fill="#52514e" font-weight="400" text-anchor="start">중앙값 72,464 msg/s · 급락 6회 · 최저 894 msg/s</text>
+<line x1="130" y1="578.0" x2="1140" y2="578.0" stroke="#e8e7e3" stroke-width="1"/>
+<text x="118" y="582.0" font-family="'Apple SD Gothic Neo','AppleGothic','Noto Sans KR',-apple-system,sans-serif" font-size="12" fill="#8a8983" font-weight="400" text-anchor="end">0</text>
+<line x1="130" y1="521.3" x2="1140" y2="521.3" stroke="#e8e7e3" stroke-width="1"/>
+<text x="118" y="525.3333333333334" font-family="'Apple SD Gothic Neo','AppleGothic','Noto Sans KR',-apple-system,sans-serif" font-size="12" fill="#8a8983" font-weight="400" text-anchor="end">40,000</text>
+<line x1="130" y1="464.7" x2="1140" y2="464.7" stroke="#e8e7e3" stroke-width="1"/>
+<text x="118" y="468.6666666666667" font-family="'Apple SD Gothic Neo','AppleGothic','Noto Sans KR',-apple-system,sans-serif" font-size="12" fill="#8a8983" font-weight="400" text-anchor="end">80,000</text>
+<line x1="130" y1="408.0" x2="1140" y2="408.0" stroke="#e8e7e3" stroke-width="1"/>
+<text x="118" y="412.0" font-family="'Apple SD Gothic Neo','AppleGothic','Noto Sans KR',-apple-system,sans-serif" font-size="12" fill="#8a8983" font-weight="400" text-anchor="end">120,000</text>
+<line x1="130" y1="578" x2="1140" y2="578" stroke="#e8e7e3" stroke-width="1"/>
+<text x="130.0" y="598" font-family="'Apple SD Gothic Neo','AppleGothic','Noto Sans KR',-apple-system,sans-serif" font-size="12" fill="#8a8983" font-weight="400" text-anchor="middle">1</text>
+<text x="284.06779661016947" y="598" font-family="'Apple SD Gothic Neo','AppleGothic','Noto Sans KR',-apple-system,sans-serif" font-size="12" fill="#8a8983" font-weight="400" text-anchor="middle">10</text>
+<text x="455.2542372881356" y="598" font-family="'Apple SD Gothic Neo','AppleGothic','Noto Sans KR',-apple-system,sans-serif" font-size="12" fill="#8a8983" font-weight="400" text-anchor="middle">20</text>
+<text x="626.4406779661017" y="598" font-family="'Apple SD Gothic Neo','AppleGothic','Noto Sans KR',-apple-system,sans-serif" font-size="12" fill="#8a8983" font-weight="400" text-anchor="middle">30</text>
+<text x="797.6271186440678" y="598" font-family="'Apple SD Gothic Neo','AppleGothic','Noto Sans KR',-apple-system,sans-serif" font-size="12" fill="#8a8983" font-weight="400" text-anchor="middle">40</text>
+<text x="968.8135593220339" y="598" font-family="'Apple SD Gothic Neo','AppleGothic','Noto Sans KR',-apple-system,sans-serif" font-size="12" fill="#8a8983" font-weight="400" text-anchor="middle">50</text>
+<text x="1140.0" y="598" font-family="'Apple SD Gothic Neo','AppleGothic','Noto Sans KR',-apple-system,sans-serif" font-size="12" fill="#8a8983" font-weight="400" text-anchor="middle">60</text>
+<polyline points="130.0,479.6 147.1,473.8 164.2,456.9 181.4,479.6 198.5,483.6 215.6,456.9 232.7,464.7 249.8,464.7 266.9,575.3 284.1,485.4 301.2,432.0 318.3,477.5 335.4,472.3 352.5,475.3 369.7,479.6 386.8,576.3 403.9,488.3 421.0,473.1 438.1,455.9 455.3,475.3 472.4,476.8 489.5,422.3 506.6,491.1 523.7,463.8 540.8,459.0 558.0,478.9 575.1,467.3 592.2,468.2 609.3,467.3 626.4,469.9 643.6,575.7 660.7,467.3 677.8,475.3 694.9,473.1 712.0,479.6 729.2,478.2 746.3,462.8 763.4,466.5 780.5,573.5 797.6,474.6 814.7,481.6 831.9,478.9 849.0,464.7 866.1,476.8 883.2,473.1 900.3,575.7 917.5,488.3 934.6,503.4 951.7,491.6 968.8,463.8 985.9,472.3 1003.1,474.6 1020.2,576.7 1037.3,484.2 1054.4,481.0 1071.5,476.8 1088.6,465.6 1105.8,466.5 1122.9,477.5 1140.0,459.0" fill="none" stroke="#eb6834" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="266.9" cy="575.3" r="5" fill="#d03b3b" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="386.8" cy="576.3" r="5" fill="#d03b3b" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="643.6" cy="575.7" r="5" fill="#d03b3b" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="780.5" cy="573.5" r="5" fill="#d03b3b" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="900.3" cy="575.7" r="5" fill="#d03b3b" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="1020.2" cy="576.7" r="5" fill="#d03b3b" stroke="#fcfcfb" stroke-width="2"/>
+<text x="635.0" y="626" font-family="'Apple SD Gothic Neo','AppleGothic','Noto Sans KR',-apple-system,sans-serif" font-size="12" fill="#8a8983" font-weight="400" text-anchor="middle">발행 구간 (1만 건 단위)</text>
+<text x="48" y="654" font-family="'Apple SD Gothic Neo','AppleGothic','Noto Sans KR',-apple-system,sans-serif" font-size="12" fill="#8a8983" font-weight="400" text-anchor="start">급락 = 해당 브로커 중앙값의 1/5 미만인 구간.  RabbitMQ 는 메모리 임계치 300MB 에서 memory alarm 발생, 브로커가 보고한 차단 사유 "low on memory".  두 패널의 y축 눈금이 다르다.</text>
+<text x="48" y="676" font-family="'Apple SD Gothic Neo','AppleGothic','Noto Sans KR',-apple-system,sans-serif" font-size="11" fill="#8a8983" font-weight="400" text-anchor="start">측정 2026-09-20 · Kafka 3.9.0 (KRaft) / RabbitMQ 3.13.7 · 단일 노드 로컬 · github.com/qjatn4793/rabbitmq-vs-kafka-lab</text>
+</svg></body></html>
