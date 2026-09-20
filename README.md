@@ -388,6 +388,6 @@ confirm 타임아웃으로도 안 잡혀서 `BlockedListener` + 별도 스레드
 
 ## 관련 글
 
-[RabbitMQ와 Kafka, 무엇이 실제로 다른가 — 7가지를 직접 재현해봤다](https://beomble-bee.tistory.com/50)
+[RabbitMQ와 Kafka, 무엇이 실제로 다른가 — 7가지를 직접 재현해봤다](https://beomble-bee.tistory.com/51)
 
 이 저장소의 실험 7개를 정리한 글입니다. 실험하면서 제가 알고 있던 것 중 네 가지가 틀렸고, 그 부분도 같이 적었습니다.
