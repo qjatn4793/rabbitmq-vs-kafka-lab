@@ -148,21 +148,46 @@ class FailoverExperiment(
                 channel.queueDeclare(queue, true, false, false, mapOf("x-queue-type" to "quorum"))
             }
         }
-        val leader = quorumLeader(queue)
-        runs["rabbit"] = CompletableFuture.supplyAsync { runRabbit(queue, durationSec, intervalMs, leader) }
+        val leader = awaitQuorumLeader(queue)
+        val leaderNode = leader.substringAfter('@')
+
+        // Kafka 프로듀서는 항상 파티션 리더와 직접 통신한다.
+        // 조건을 맞추려면 RabbitMQ 클라이언트도 quorum queue 리더 노드에 붙어 있어야 한다.
+        // 그래야 노드를 죽였을 때 "TCP 연결 끊김 + 리더 재선출"이 동시에 일어난다.
+        val connection = rabbitConnection(addressesPreferring(leaderNode))
+        val connectedNode = nodeForPort(connection.port)
+        val sameNode = connectedNode == leaderNode
+
+        runs["rabbit"] = CompletableFuture.supplyAsync {
+            runRabbit(connection, queue, durationSec, intervalMs, leader, connectedNode)
+        }
 
         return mapOf(
             "broker" to "rabbitmq",
             "queue" to queue,
             "queueType" to "quorum",
             "leaderNode" to leader,
-            "leaderContainer" to "mqlab-${leader.substringAfter('@')}",
+            "connectedNode" to connectedNode,
+            "connectedPort" to connection.port,
+            "clientOnLeader" to sameNode,
+            "leaderContainer" to "mqlab-$leaderNode",
             "durationSec" to durationSec,
-            "hint" to "지금 docker stop mqlab-${leader.substringAfter('@')} 를 실행한 뒤 /experiments/7/rabbit/result 를 호출하세요",
+            "hint" to if (sameNode) {
+                "클라이언트가 리더 노드($leaderNode)에 붙어 있다. docker stop mqlab-$leaderNode 로 Kafka 와 같은 조건을 만든다"
+            } else {
+                "주의: 클라이언트는 $connectedNode, 리더는 $leaderNode 로 서로 다르다. 조건이 Kafka 보다 관대해진다"
+            },
         )
     }
 
-    private fun runRabbit(queue: String, durationSec: Int, intervalMs: Long, leaderBefore: String): Map<String, Any?> {
+    private fun runRabbit(
+        connection: com.rabbitmq.client.Connection,
+        queue: String,
+        durationSec: Int,
+        intervalMs: Long,
+        leaderBefore: String,
+        connectedNode: String,
+    ): Map<String, Any?> {
         val report = Report("EXP7-FAILOVER-RABBIT")
         val timeline = Timeline()
         var attempted = 0
@@ -170,7 +195,6 @@ class FailoverExperiment(
         var failed = 0
         val errors = mutableMapOf<String, Int>()
 
-        val connection = rabbitConnection()
         var channel = connection.createChannel().also { it.confirmSelect() }
 
         val start = System.currentTimeMillis()
@@ -202,6 +226,7 @@ class FailoverExperiment(
 
         report.add("실험 7 (RabbitMQ) — quorum queue 리더 노드를 죽였을 때")
         report.add("큐 $queue  x-queue-type=quorum (3노드 복제)")
+        report.add("클라이언트 접속 노드 : rabbit@$connectedNode  (리더와 동일: ${connectedNode == leaderBefore.substringAfter('@')})")
         report.add("장애 전 리더 : $leaderBefore")
         report.add("장애 후 리더 : $leaderAfter")
         report.add("")
@@ -218,6 +243,8 @@ class FailoverExperiment(
             "queue" to queue,
             "leaderBefore" to leaderBefore,
             "leaderAfter" to leaderAfter,
+            "connectedNode" to connectedNode,
+            "clientOnLeader" to (connectedNode == leaderBefore.substringAfter('@')),
             "attempted" to attempted,
             "acked" to acked,
             "failed" to failed,
@@ -302,16 +329,40 @@ class FailoverExperiment(
     private fun addresses(): List<Address> =
         rabbitPorts.split(",").map { Address(rabbitHost, it.trim().toInt()) }
 
-    private fun rabbitConnection() =
+    private fun rabbitConnection(list: List<Address> = addresses()) =
         RabbitConnectionFactory().apply {
             username = "guest"
             password = "guest"
             isAutomaticRecoveryEnabled = true
             networkRecoveryInterval = 1_000
-        }.newConnection(addresses())
+        }.newConnection(list)
+
+    private fun ports(): List<Int> = rabbitPorts.split(",").map { it.trim().toInt() }
+
+    /** 포트 순서와 rabbit1..N 이 1:1 로 대응한다고 본다 (docker-compose.cluster.yml 기준) */
+    private fun nodeForPort(port: Int): String = "rabbit${ports().indexOf(port) + 1}"
+
+    /** 지정한 노드에 먼저 붙도록 주소 순서를 바꾼다 */
+    private fun addressesPreferring(node: String): List<Address> {
+        val index = node.removePrefix("rabbit").toIntOrNull()?.minus(1) ?: return addresses()
+        val all = addresses()
+        if (index !in all.indices) return all
+        return listOf(all[index]) + all.filterIndexed { i, _ -> i != index }
+    }
 
     private fun quorumLeader(queue: String): String =
         RabbitInsightHttp(rabbitHost).queueLeader(queue)
+
+    /** 큐를 만든 직후에는 관리 API 가 아직 리더를 보고하지 않는다(통계 수집 주기). 확정될 때까지 기다린다. */
+    private fun awaitQuorumLeader(queue: String, timeoutMs: Long = 30_000): String {
+        val deadline = System.currentTimeMillis() + timeoutMs
+        while (System.currentTimeMillis() < deadline) {
+            val leader = runCatching { quorumLeader(queue) }.getOrDefault("unknown")
+            if (leader.startsWith("rabbit@")) return leader
+            Thread.sleep(500)
+        }
+        error("quorum queue 리더를 ${timeoutMs}ms 안에 확인하지 못했습니다")
+    }
 
     /**
      * 큐 적재량은 관리 API 대신 AMQP passive declare 로 읽는다.
