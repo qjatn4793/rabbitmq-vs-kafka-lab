@@ -16,6 +16,13 @@ spring:
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
       acks: all
 
+lab:
+  cluster:
+    # 실험 7(페일오버) 전용 3노드 클러스터. docker-compose.cluster.yml 로 띄운다.
+    kafka-bootstrap: localhost:19092,localhost:29092,localhost:39092
+    rabbit-host: localhost
+    rabbit-ports: 5682,5683,5684
+
 logging:
   level:
     root: INFO
