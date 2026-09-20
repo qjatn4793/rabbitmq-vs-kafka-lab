@@ -19,3 +19,8 @@ gradle-app.setting
 .project
 # JDT-specific (Eclipse Java Development Tools)
 .classpath
+
+.idea/**
+
+# 로컬 도구 상태 (커밋 대상 아님)
+.omc/
